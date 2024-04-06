@@ -1,0 +1,83 @@
+using System;
+using System.Text;
+using System.Linq;
+using System.Collections.Generic;
+
+public class PasswordGenerator
+{
+    private static Random random = new Random();
+    private const string UppercaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private const string Numbers = "0123456789";
+    private const string SpecialCharacters = "!@#$%^&*";
+    
+    public static string GeneratePassword(string firstName, string lastName, string registrationNumber)
+    {
+        if (string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName) || registrationNumber.Length < 2)
+        {
+            throw new ArgumentException("Invalid input parameters for generating password.");
+        }
+
+        // At least one uppercase alphabet - using the first letter of the first name
+        string password = firstName.Substring(0, 1).ToUpper();
+
+        // At least 4 numbers, two of which are from the registration number
+        string numbers = registrationNumber.Substring(0, 2) // Taking first two numbers from registration
+                         + RandomString(Numbers, 2); // Adding two more random numbers
+
+        // At least 2 special characters
+        string specialChars = RandomString(SpecialCharacters, 2);
+
+        // Initials of first and last name
+        string initials = firstName.Substring(0, 1) + lastName.Substring(0, 1);
+
+        // All odd letters of your first name
+        string oddLettersFirstName = new string(firstName.Where((c, i) => i % 2 == 0).ToArray());
+
+        // All even letters of your last name
+        string evenLettersLastName = new string(lastName.Where((c, i) => i % 2 != 0).ToArray());
+
+        // Combine all elements
+        string combined = password + numbers + specialChars + initials + oddLettersFirstName + evenLettersLastName;
+
+        // If combined string is longer than 16 characters, trim it; otherwise, fill with random letters up to 16
+        if (combined.Length > 16)
+        {
+            return combined.Substring(0, 16);
+        }
+        else
+        {
+            return combined + RandomString(UppercaseLetters, 16 - combined.Length);
+        }
+    }
+
+    private static string RandomString(string chars, int length)
+    {
+        return new string(Enumerable.Repeat(chars, length)
+          .Select(s => s[random.Next(s.Length)]).ToArray());
+    }
+
+    static void Main(string[] args)
+    {
+        Console.Write("Enter your first name: ");
+        string firstName = Console.ReadLine();
+
+        Console.Write("Enter your last name: ");
+        string lastName = Console.ReadLine();
+
+        Console.Write("Enter your registration number (at least two digits): ");
+        string registrationNumber = Console.ReadLine();
+
+        // Basic validation
+        if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName) || registrationNumber.Length < 2)
+        {
+            Console.WriteLine("Invalid input. Please ensure you've entered the correct details.");
+            return;
+        }
+
+        try {
+            string password = GeneratePassword(firstName, lastName, registrationNumber);
+            Console.WriteLine($"Generated Password: {password}");
+        }
+        catch (ArgumentException ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");	} }}
